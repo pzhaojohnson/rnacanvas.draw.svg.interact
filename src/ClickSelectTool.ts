@@ -37,8 +37,8 @@ export class ClickSelectTool {
   }
 
   private handleMouseDown(event: MouseEvent): void {
-    if (event.target === this.targetSVGDoc && !event.shiftKey) {
-      this.selectedSVGElements.clear();
+    if (event.target === this.targetSVGDoc) {
+      !event.shiftKey ? this.selectedSVGElements.clear() : {};
       return;
     }
 
