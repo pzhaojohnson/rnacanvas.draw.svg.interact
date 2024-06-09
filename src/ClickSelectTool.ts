@@ -50,8 +50,8 @@ export class ClickSelectTool {
       return;
     }
 
-    if (this.selectedSVGElements.include(event.target) && event.shiftKey) {
-      this.selectedSVGElements.removeAll([event.target]);
+    if (this.selectedSVGElements.include(event.target)) {
+      event.shiftKey ? this.selectedSVGElements.removeAll([event.target]) : {};
       return;
     }
 
