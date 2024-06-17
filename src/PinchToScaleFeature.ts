@@ -84,8 +84,8 @@ export class PinchToScaleFeature {
     let deltaY = clamp(event.deltaY, -25, 25);
 
     // the factor to change the scaling by
-    // (multiplying by 5 feels good when testing)
-    let changeFactor = 1 - (5 * deltaY / this.targetSVGDoc.getBoundingClientRect().height);
+    // (dividing by 160 felt good in testing)
+    let changeFactor = 1 - (deltaY / 160);
 
     // this just assumes that the horizontal and vertical scalings are the same
     let scaling = changeFactor * this.targetSVGDocCoordinateSystem.horizontalScaling;
