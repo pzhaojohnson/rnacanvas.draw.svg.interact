@@ -92,7 +92,10 @@ export class PinchToScaleFeature {
 
     // ensure that the new scaling factor is a reasonable value
     scaling = Number.isFinite(scaling) ? scaling : 1;
-    scaling = clamp(scaling, 1e-2, 500);
+    scaling = clamp(scaling, 1e-1, 500);
+
+    // account for any clamping of the scaling factor
+    changeFactor = scaling / this.targetSVGDocCoordinateSystem.horizontalScaling;
 
     // calculate new scroll positions
     let scrollCenterX = changeFactor * this.horizontalScrollbar.thumb.centerX;
