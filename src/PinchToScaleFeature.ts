@@ -87,23 +87,25 @@ export class PinchToScaleFeature {
     // (dividing by 150 feels good in testing)
     let changeFactor = 1 - (deltaY / 150);
 
-    // this just assumes that the horizontal and vertical scalings are the same
-    let scaling = changeFactor * this.targetSVGDocCoordinateSystem.horizontalScaling;
+    // this assumes that the horizontal and vertical scaling factors are the same
+    let currentScaling = this.targetSVGDocCoordinateSystem.horizontalScaling;
+
+    let newScaling = changeFactor * currentScaling;
 
     // ensure that the new scaling factor is a reasonable value
-    scaling = Number.isFinite(scaling) ? scaling : 1;
-    scaling = clamp(scaling, 1e-1, 500);
+    newScaling = Number.isFinite(newScaling) ? newScaling : 1;
+    newScaling = clamp(newScaling, 1e-1, 500);
 
-    // account for any clamping of the scaling factor
-    changeFactor = scaling / this.targetSVGDocCoordinateSystem.horizontalScaling;
+    // account for any clamping of the new scaling factor
+    changeFactor = newScaling / currentScaling;
 
     // calculate new scroll positions
-    let scrollCenterX = changeFactor * this.horizontalScrollbar.thumb.centerX;
-    let scrollCenterY = changeFactor * this.verticalScrollbar.thumb.centerY;
+    let newScrollCenterX = changeFactor * this.horizontalScrollbar.thumb.centerX;
+    let newScrollCenterY = changeFactor * this.verticalScrollbar.thumb.centerY;
 
-    this.targetSVGDocCoordinateSystem.setScaling(scaling);
+    this.targetSVGDocCoordinateSystem.setScaling(newScaling);
 
-    this.horizontalScrollbar.thumb.centerX = scrollCenterX;
-    this.verticalScrollbar.thumb.centerY = scrollCenterY;
+    this.horizontalScrollbar.thumb.centerX = newScrollCenterX;
+    this.verticalScrollbar.thumb.centerY = newScrollCenterY;
   }
 }
