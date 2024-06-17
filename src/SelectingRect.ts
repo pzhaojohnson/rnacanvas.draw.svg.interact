@@ -7,9 +7,9 @@ import { Box } from '@rnacanvas/boxes';
  */
 interface LiveSet<T> {
   /**
-   * Adds the specified items to the set.
+   * Adds all of the specified items to the set.
    */
-  add(items: T[]): void;
+  addAll(items: T[]): void;
 
   /**
    * Clears the set of all items.
@@ -191,6 +191,6 @@ export class SelectingRect {
     ));
 
     !this.lastMouseDown?.shiftKey ? this.selectedSVGElements.clear() : {};
-    this.selectedSVGElements.add(coveredEles);
+    this.selectedSVGElements.addAll(coveredEles);
   }
 }
