@@ -54,6 +54,15 @@ export class PinchToScaleFeature {
   private readonly verticalScrollbar: VerticalScrollbar;
 
   /**
+   * Wheel events that occur inside the interaction scope
+   * (or whose target is the interaction scope)
+   * will be responded to by the pinch-to-scale feature.
+   *
+   * Is the target SVG document by default.
+   */
+  public interactionScope: Element;
+
+  /**
    * Providing the horizontal and vertical scrollbars for the target SVG document
    * allows them to be kept centered on their original points in the target SVG document
    * while the user is pinching-to-scale.
@@ -69,6 +78,8 @@ export class PinchToScaleFeature {
     this.horizontalScrollbar = horizontalScrollbar;
     this.verticalScrollbar = verticalScrollbar;
 
+    this.interactionScope = targetSVGDoc;
+
     window.addEventListener('wheel', event => this.handleWheel(event), { passive: false });
   }
 
@@ -76,7 +87,7 @@ export class PinchToScaleFeature {
     if (!event.ctrlKey) { return; }
 
     if (!(event.target instanceof Node)) { return; }
-    if (!this.targetSVGDoc.contains(event.target)) { return; }
+    if (!this.interactionScope.contains(event.target)) { return; }
 
     event.preventDefault();
 
