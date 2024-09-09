@@ -50,8 +50,21 @@ export class PinchToScaleFeature {
    */
   private readonly targetSVGDocCoordinateSystem: SVGDocCoordinateSystem;
 
-  private readonly horizontalScrollbar: HorizontalScrollbar;
-  private readonly verticalScrollbar: VerticalScrollbar;
+  /**
+   * The horizontal scrollbar for the target SVG document.
+   *
+   * When defined, the center X coordinate of its thumb
+   * will be maintained when pinching-to-scale.
+   */
+  public horizontalScrollbar?: HorizontalScrollbar;
+
+  /**
+   * The vertical scrollbar for the target SVG document.
+   *
+   * When defined, the center Y coordinate of its thumb
+   * will be maintained when pinching-to-scale.
+   */
+  public verticalScrollbar?: VerticalScrollbar;
 
   /**
    * Wheel events that occur inside the interaction scope
@@ -62,21 +75,9 @@ export class PinchToScaleFeature {
    */
   public interactionScope: Element;
 
-  /**
-   * Providing the horizontal and vertical scrollbars for the target SVG document
-   * allows them to be kept centered on their original points in the target SVG document
-   * while the user is pinching-to-scale.
-   *
-   * @param targetSVGDoc
-   * @param horizontalScrollbar The horizontal scrollbar for the target SVG document.
-   * @param verticalScrollbar The vertical scrollbar for the target SVG document.
-   */
-  constructor(targetSVGDoc: SVGSVGElement, horizontalScrollbar: HorizontalScrollbar, verticalScrollbar: VerticalScrollbar) {
+  constructor(targetSVGDoc: SVGSVGElement) {
     this.targetSVGDoc = targetSVGDoc;
     this.targetSVGDocCoordinateSystem = new SVGDocCoordinateSystem(targetSVGDoc);
-
-    this.horizontalScrollbar = horizontalScrollbar;
-    this.verticalScrollbar = verticalScrollbar;
 
     this.interactionScope = targetSVGDoc;
 
@@ -111,12 +112,12 @@ export class PinchToScaleFeature {
     changeFactor = newScaling / currentScaling;
 
     // calculate new scroll positions
-    let newScrollCenterX = changeFactor * this.horizontalScrollbar.thumb.centerX;
-    let newScrollCenterY = changeFactor * this.verticalScrollbar.thumb.centerY;
+    let newScrollCenterX = changeFactor * (this.horizontalScrollbar?.thumb.centerX ?? 0);
+    let newScrollCenterY = changeFactor * (this.verticalScrollbar?.thumb.centerY ?? 0);
 
     this.targetSVGDocCoordinateSystem.setScaling(newScaling);
 
-    this.horizontalScrollbar.thumb.centerX = newScrollCenterX;
-    this.verticalScrollbar.thumb.centerY = newScrollCenterY;
+    this.horizontalScrollbar ? this.horizontalScrollbar.thumb.centerX = newScrollCenterX : {};
+    this.verticalScrollbar ? this.verticalScrollbar.thumb.centerY = newScrollCenterY : {};
   }
 }
