@@ -106,7 +106,7 @@ export class PinchToScaleFeature {
 
     // ensure that the new scaling factor is a reasonable value
     newScaling = Number.isFinite(newScaling) ? newScaling : 1;
-    newScaling = clamp(newScaling, 1e-1, 500);
+    newScaling = clamp(newScaling, 1e-2, 500);
 
     // account for any clamping of the new scaling factor
     changeFactor = newScaling / currentScaling;
