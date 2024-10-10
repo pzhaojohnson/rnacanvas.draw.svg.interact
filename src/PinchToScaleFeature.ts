@@ -75,6 +75,28 @@ export class PinchToScaleFeature {
    */
   public interactionScope: Element;
 
+  /**
+   * To be called just before the target SVG document is scaled.
+   */
+  beforeScaling?: () => void;
+
+  /**
+   * To be called just after a scaling "action" by the user has completed.
+   */
+  afterScaling?: () => void;
+
+  /**
+   * The exact time that the target SVG document was last scaled.
+   *
+   * Is initialized to zero before the target SVG document has been scaled at all.
+   */
+  #timeOfLastScaling = 0;
+
+  /**
+   * The interval that calls the `afterScaling()` method (if defined).
+   */
+  #afterScalingInterval?: ReturnType<typeof setInterval>;
+
   constructor(targetSVGDoc: SVGSVGElement) {
     this.targetSVGDoc = targetSVGDoc;
     this.targetSVGDocCoordinateSystem = new SVGDocCoordinateSystem(targetSVGDoc);
@@ -91,6 +113,10 @@ export class PinchToScaleFeature {
     if (!this.interactionScope.contains(event.target)) { return; }
 
     event.preventDefault();
+
+    if (!this.#afterScalingInterval) {
+      this.beforeScaling ? this.beforeScaling() : {};
+    }
 
     // delta-Y values can be really big when scrolling with a mouse
     let deltaY = clamp(event.deltaY, -25, 25);
@@ -119,5 +145,17 @@ export class PinchToScaleFeature {
 
     this.horizontalScrollbar ? this.horizontalScrollbar.thumb.centerX = newScrollCenterX : {};
     this.verticalScrollbar ? this.verticalScrollbar.thumb.centerY = newScrollCenterY : {};
+
+    this.#timeOfLastScaling = Date.now();
+
+    if (!this.#afterScalingInterval) {
+      this.#afterScalingInterval = setInterval(() => {
+        if (Date.now() - this.#timeOfLastScaling >= 250) {
+          this.afterScaling ? this.afterScaling() : {};
+          clearInterval(this.#afterScalingInterval);
+          this.#afterScalingInterval = undefined;
+        }
+      }, 50);
+    }
   }
 }
