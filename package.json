@@ -1,6 +1,6 @@
 {
   "name": "@rnacanvas/draw.svg.interact",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Interact with SVG elements",
   "repository": {
     "type": "git",

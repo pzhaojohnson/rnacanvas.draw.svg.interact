@@ -150,7 +150,7 @@ export class PinchToScaleFeature {
 
     if (!this.#afterScalingInterval) {
       this.#afterScalingInterval = setInterval(() => {
-        if (Date.now() - this.#timeOfLastScaling >= 250) {
+        if (Date.now() - this.#timeOfLastScaling >= 500) {
           this.afterScaling ? this.afterScaling() : {};
           clearInterval(this.#afterScalingInterval);
           this.#afterScalingInterval = undefined;
