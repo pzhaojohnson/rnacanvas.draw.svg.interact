@@ -29,15 +29,15 @@ interface LiveSet<T> {
  */
 export class ClickSelectTool {
   /**
-   * @param targetSVGDoc The SVG document that the click-select tool is for.
+   * @param target The target SVG document for the click-select tool.
    * @param selectedSVGElements A live set of selected SVG elements to be modified based on user interaction with the target SVG document.
    */
-  constructor(private targetSVGDoc: SVGSVGElement, private selectedSVGElements: LiveSet<SVGGraphicsElement>) {
-    targetSVGDoc.addEventListener('mousedown', event => this.handleMouseDown(event));
+  constructor(public target: SVGSVGElement, private selectedSVGElements: LiveSet<SVGGraphicsElement>) {
+    window.addEventListener('mousedown', event => this.handleMouseDown(event));
   }
 
   private handleMouseDown(event: MouseEvent): void {
-    if (event.target === this.targetSVGDoc) {
+    if (event.target === this.target) {
       !event.shiftKey ? this.selectedSVGElements.clear() : {};
       return;
     }
@@ -45,7 +45,7 @@ export class ClickSelectTool {
     if (!(event.target instanceof SVGGraphicsElement)) {
       // normally only SVG graphics elements are interacted with by the user
       return;
-    } else if (!this.targetSVGDoc.contains(event.target)) {
+    } else if (!this.target.contains(event.target)) {
       // ignore mouse down events outside of the target SVG document
       return;
     }
