@@ -1,4 +1,4 @@
-import { CoordinateSystem as SVGDocCoordinateSystem } from '@rnacanvas/draw.svg';
+import { CoordinateSystem } from '@rnacanvas/draw.svg';
 
 import { clamp } from '@rnacanvas/math';
 
@@ -43,13 +43,6 @@ interface VerticalScrollbar {
  * No other attributes of the target SVG document are modified.
  */
 export class PinchToScaleFeature {
-  private readonly targetSVGDoc: SVGSVGElement;
-
-  /**
-   * The coordinate system of the target SVG document.
-   */
-  private readonly targetSVGDocCoordinateSystem: SVGDocCoordinateSystem;
-
   /**
    * The horizontal scrollbar for the target SVG document.
    *
@@ -66,14 +59,7 @@ export class PinchToScaleFeature {
    */
   public verticalScrollbar?: VerticalScrollbar;
 
-  /**
-   * Wheel events that occur inside the interaction scope
-   * (or whose target is the interaction scope)
-   * will be responded to by the pinch-to-scale feature.
-   *
-   * Is the target SVG document by default.
-   */
-  public interactionScope: Element;
+  #interactionScope?: Element;
 
   /**
    * To be called just before the target SVG document is scaled.
@@ -97,13 +83,32 @@ export class PinchToScaleFeature {
    */
   #afterScalingInterval?: ReturnType<typeof setInterval>;
 
-  constructor(targetSVGDoc: SVGSVGElement) {
-    this.targetSVGDoc = targetSVGDoc;
-    this.targetSVGDocCoordinateSystem = new SVGDocCoordinateSystem(targetSVGDoc);
-
-    this.interactionScope = targetSVGDoc;
-
+  /**
+   * @param target The target SVG document.
+   */
+  constructor(public target: SVGSVGElement) {
     window.addEventListener('wheel', event => this.handleWheel(event), { passive: false });
+  }
+
+  /**
+   * Wheel events that occur inside the interaction scope
+   * (or whose target is the interaction scope)
+   * will be responded to by the pinch-to-scale feature.
+   *
+   * Is the target SVG document by default.
+   *
+   * Note that when the interaction scope is not explicitly set
+   * it will auto-update to always be the current target SVG document.
+   *
+   * However, the interaction scope will not auto-update when the target SVG document changes
+   * if it has been explicitly set.
+   */
+  get interactionScope(): Element {
+    return this.#interactionScope ?? this.target;
+  }
+
+  set interactionScope(interactionScope) {
+    this.#interactionScope = interactionScope;
   }
 
   handleWheel(event: WheelEvent): void {
@@ -125,8 +130,10 @@ export class PinchToScaleFeature {
     // (dividing by 150 feels good in testing)
     let changeFactor = 1 - (deltaY / 150);
 
+    let targetCoordinateSystem = new CoordinateSystem(this.target);
+
     // this assumes that the horizontal and vertical scaling factors are the same
-    let currentScaling = this.targetSVGDocCoordinateSystem.horizontalScaling;
+    let currentScaling = targetCoordinateSystem.horizontalScaling;
 
     let newScaling = changeFactor * currentScaling;
 
@@ -141,7 +148,7 @@ export class PinchToScaleFeature {
     let newScrollCenterX = changeFactor * (this.horizontalScrollbar?.thumb.centerX ?? 0);
     let newScrollCenterY = changeFactor * (this.verticalScrollbar?.thumb.centerY ?? 0);
 
-    this.targetSVGDocCoordinateSystem.setScaling(newScaling);
+    targetCoordinateSystem.setScaling(newScaling);
 
     this.horizontalScrollbar ? this.horizontalScrollbar.thumb.centerX = newScrollCenterX : {};
     this.verticalScrollbar ? this.verticalScrollbar.thumb.centerY = newScrollCenterY : {};
