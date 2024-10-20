@@ -87,7 +87,7 @@ export class PinchToScaleFeature {
    * @param target The target SVG document.
    */
   constructor(public target: SVGSVGElement) {
-    window.addEventListener('wheel', event => this.handleWheel(event), { passive: false });
+    window.addEventListener('wheel', event => this.#handleWheel(event), { passive: false });
   }
 
   /**
@@ -111,7 +111,7 @@ export class PinchToScaleFeature {
     this.#interactionScope = interactionScope;
   }
 
-  handleWheel(event: WheelEvent): void {
+  #handleWheel(event: WheelEvent): void {
     if (!event.ctrlKey) { return; }
 
     if (!(event.target instanceof Node)) { return; }
