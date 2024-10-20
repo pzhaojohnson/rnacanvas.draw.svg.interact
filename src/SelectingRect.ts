@@ -1,4 +1,4 @@
-import { CoordinateSystem as SVGDocCoordinateSystem } from '@rnacanvas/draw.svg';
+import { CoordinateSystem } from '@rnacanvas/draw.svg';
 
 import { Box } from '@rnacanvas/boxes';
 
@@ -29,10 +29,7 @@ function isSVGGraphicsElements(value: unknown): value is SVGGraphicsElement {
  * by outside code but rather only interacted with through the interface of this class.
  */
 export class SelectingRect {
-  /**
-   * The coordinate system of the target SVG document.
-   */
-  private readonly targetSVGDocCoordinateSystem: SVGDocCoordinateSystem;
+  #target;
 
   /**
    * The DOM node that is the selecting rect.
@@ -44,6 +41,8 @@ export class SelectingRect {
    * has scaling of 1.
    */
   private readonly defaultLineThickness = 0.5;
+
+  #scalingObserver;
 
   /**
    * The most recent mouse down event.
@@ -78,23 +77,24 @@ export class SelectingRect {
    * according to user interaction with the target SVG document
    * involving the selecting rect.
    *
-   * @param targetSVGDoc
+   * @param target The target SVG document for the selecting rect.
    * @param selectedSVGElements A live set of the currently selected SVG elements.
    */
-  constructor(private targetSVGDoc: SVGSVGElement, private selectedSVGElements: LiveSet<SVGGraphicsElement>) {
-    this.targetSVGDocCoordinateSystem = new SVGDocCoordinateSystem(targetSVGDoc);
+  constructor(target: SVGSVGElement, private selectedSVGElements: LiveSet<SVGGraphicsElement>) {
+    this.#target = target;
 
     this.domNode = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
     this.domNode.setAttribute('stroke', 'blue');
-    this.refreshLineThickness();
 
     this.domNode.setAttribute('fill', 'blue');
     this.domNode.setAttribute('fill-opacity', '0.1');
 
     // watches for when the scaling of the target SVG document changes
-    let scalingObserver = new MutationObserver(() => this.refreshLineThickness());
-    scalingObserver.observe(targetSVGDoc, { attributes: true, attributeFilter: ['viewBox', 'width', 'height'] });
+    this.#scalingObserver = new MutationObserver(() => this.refreshLineThickness());
+    this.#scalingObserver.observe(target, { attributes: true, attributeFilter: ['viewBox', 'width', 'height'] });
+
+    this.refreshLineThickness();
 
     this.domNode.style.pointerEvents = 'none';
 
@@ -108,6 +108,23 @@ export class SelectingRect {
     window.addEventListener('mouseup', event => this.handleMouseUp(event));
   }
 
+  get target() {
+    return this.#target;
+  }
+
+  set target(target) {
+    this.#target = target;
+
+    this.#scalingObserver.disconnect();
+    this.#scalingObserver.observe(target, { attributes: true, attributeFilter: ['viewBox', 'width', 'height'] });
+
+    this.refreshLineThickness();
+  }
+
+  get #targetCoordinateSystem() {
+    return new CoordinateSystem(this.target);
+  }
+
   /**
    * Updates the line thickness of the selecting rect
    * according to the current scaling of the drawing.
@@ -116,7 +133,7 @@ export class SelectingRect {
     // just assume that the target SVG document has equal horizontal and vertical scalings for now
     this.domNode.setAttribute(
       'stroke-width',
-      `${this.defaultLineThickness / this.targetSVGDocCoordinateSystem.horizontalScaling}`,
+      `${this.defaultLineThickness / this.#targetCoordinateSystem.horizontalScaling}`,
     );
   }
 
@@ -140,8 +157,8 @@ export class SelectingRect {
   private handleMouseDown(event: MouseEvent): void {
     this.lastMouseDown = event;
 
-    this.lastMouseDownX = this.targetSVGDocCoordinateSystem.fromClientX(event.clientX);
-    this.lastMouseDownY = this.targetSVGDocCoordinateSystem.fromClientY(event.clientY);
+    this.lastMouseDownX = this.#targetCoordinateSystem.fromClientX(event.clientX);
+    this.lastMouseDownY = this.#targetCoordinateSystem.fromClientY(event.clientY);
 
     this.mouseIsDown = true;
   }
@@ -151,10 +168,10 @@ export class SelectingRect {
     if (!this.lastMouseDown) { return; }
 
     // dragging must have been initiated on the target SVG document itself for the selecting rect to be drawn
-    if (this.lastMouseDown.target !== this.targetSVGDoc) { return; }
+    if (this.lastMouseDown.target !== this.target) { return; }
 
-    let mouseMoveX = this.targetSVGDocCoordinateSystem.fromClientX(event.clientX);
-    let mouseMoveY = this.targetSVGDocCoordinateSystem.fromClientY(event.clientY);
+    let mouseMoveX = this.#targetCoordinateSystem.fromClientX(event.clientX);
+    let mouseMoveY = this.#targetCoordinateSystem.fromClientY(event.clientY);
 
     let d = `M ${this.lastMouseDownX} ${this.lastMouseDownY} H ${mouseMoveX} V ${mouseMoveY} H ${this.lastMouseDownX} z`;
     this.domNode.setAttribute('d', d);
@@ -176,8 +193,8 @@ export class SelectingRect {
       return;
     }
 
-    let mouseUpX = this.targetSVGDocCoordinateSystem.fromClientX(event.clientX);
-    let mouseUpY = this.targetSVGDocCoordinateSystem.fromClientY(event.clientY);
+    let mouseUpX = this.#targetCoordinateSystem.fromClientX(event.clientX);
+    let mouseUpY = this.#targetCoordinateSystem.fromClientY(event.clientY);
 
     // the box covered by the selecting rect
     let coveredBox = Box.bounding([
@@ -186,7 +203,7 @@ export class SelectingRect {
     ]);
 
     // the elements covered by the selecting rect
-    let coveredEles = [...this.targetSVGDoc.children].filter(isSVGGraphicsElements).filter(ele => (
+    let coveredEles = [...this.target.children].filter(isSVGGraphicsElements).filter(ele => (
       Box.matching(ele.getBBox()).isBoundedBy(coveredBox)
     ));
 
