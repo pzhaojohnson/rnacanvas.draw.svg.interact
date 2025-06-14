@@ -1,6 +1,6 @@
 {
   "name": "@rnacanvas/draw.svg.interact",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Interact with SVG elements",
   "repository": {
     "type": "git",
@@ -17,16 +17,16 @@
     "@babel/core": "^7.23.7",
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-typescript": "^7.23.3",
-    "babel-jest": "^29.7.0",
-    "jest": "^29.7.0",
+    "babel-jest": "^30.0.0",
+    "jest": "^30.0.0",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@rnacanvas/boxes": "^2.3.1",
-    "@rnacanvas/draw.svg": "^2.5.0",
+    "@rnacanvas/draw.svg": "^3.6.0",
     "@rnacanvas/math": "^1.16.0"
   }
 }

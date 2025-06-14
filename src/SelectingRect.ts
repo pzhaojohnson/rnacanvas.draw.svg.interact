@@ -40,7 +40,7 @@ export class SelectingRect {
    * The line thickness of the selecting rect when the target SVG document
    * has scaling of 1.
    */
-  private readonly defaultLineThickness = 0.5;
+  private readonly defaultLineThickness = 0.75;
 
   #scalingObserver;
 
